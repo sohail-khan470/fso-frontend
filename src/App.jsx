@@ -2,6 +2,9 @@ import Note from "./components/Note"
 import { useEffect, useState } from "react"
 import noteService from "./api/note-service"
 import { ToastContainer,toast } from "react-toastify"
+import userService from "./api/user-service"
+
+
 
 const App = () => {
   const [notes,setNotes] = useState([])
@@ -9,6 +12,7 @@ const App = () => {
   const [showAll,setShowAll] = useState(false);
   const [username,setUsername] = useState("");
   const [password,setPassword] = useState("");
+  const [user,setUser] = useState(null);
 
   useEffect(()=>{
     const getAll = async()=>{
@@ -26,7 +30,7 @@ const App = () => {
     const noteObject = {
       content: newNote,
       important: Math.random() < 0.5,
-    }
+    } 
     await noteService.create(noteObject);
     setNotes(notes.concat(noteObject));
     setNewNote("")
@@ -38,8 +42,14 @@ const App = () => {
     console.log(event.target.value);
   }
 
-  const handleLogin = (event) => {
+  const handleLogin = async(event) => {
     event.preventDefault()
+    const user = await userService.login({username,password});
+    setUser(user);
+    setUsername("");
+
+
+
     console.log('logging in with', username, password)
   }
 
