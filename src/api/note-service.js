@@ -1,6 +1,11 @@
 import axios from "axios";
 
 const baseUrl = "http://localhost:4100/notes";
+let token = null;
+
+const setToken = (newToken) => {
+  token = `Bearer ${newToken}`;
+};
 
 const getAll = async () => {
   try {
@@ -13,8 +18,14 @@ const getAll = async () => {
 };
 
 const create = async (newObject) => {
+  const config = {
+    headers: {
+      Authorization: token,
+    },
+  };
+
   try {
-    const response = await axios.post(baseUrl, newObject);
+    const response = await axios.post(baseUrl, newObject, config);
     return response.data;
   } catch (error) {
     console.log("error creating note");
@@ -54,6 +65,7 @@ const noteService = {
   update,
   remove,
   findOne,
+  setToken,
 };
 
 export default noteService;
