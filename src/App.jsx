@@ -22,6 +22,16 @@ const App = () => {
     getAll();
   }, []);
 
+
+  useEffect(() => {
+    const loggedUserJSON = window.localStorage.getItem('loggedNoteappUser')
+    if (loggedUserJSON) {
+      const user = JSON.parse(loggedUserJSON)
+      setUser(user)
+      noteService.setToken(user.token)
+    }
+  }, [])
+
   const addNote = async (event) => {
     event.preventDefault();
     const noteObject = {
@@ -30,6 +40,7 @@ const App = () => {
     };
     await noteService.create(noteObject);
     setNotes(notes.concat(noteObject));
+    toast("Note added successfully");
     setNewNote("");
   };
 
@@ -41,6 +52,9 @@ const App = () => {
   const handleLogin = async (event) => {
     event.preventDefault();
     const user = await userService.login({ username, password });
+    window.localStorage.setItem(
+      'loggedNoteappUser', JSON.stringify(user)
+    ) 
     noteService.setToken(user.token);
     setUser(user);
     if(!user){
@@ -56,7 +70,6 @@ const App = () => {
 
   const toggleImportance = async (id) => {
     const note = notes.find((n) => n._id === id);
-    console.log(note)
     const updatedNote = { ...note, important: !note.important };
     await noteService.update(id, updatedNote);
     setNotes(notes.map((n) => (n._id === id ? updatedNote : n)));
