@@ -9,7 +9,7 @@ const login = async (data) => {
     });
     return response.data;
   } catch (error) {
-    console.log("error getting notes");
+    console.log("error logging in");
     console.log(error);
   }
 };

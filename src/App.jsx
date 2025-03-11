@@ -4,6 +4,8 @@ import noteService from "./api/note-service";
 import { ToastContainer, toast } from "react-toastify";
 import userService from "./api/user-service";
 import LoginForm from "./components/LoginForm";
+import NoteForm from "./components/NoteForm";
+import Togglable from "./components/Toggleable";
 
 const App = () => {
   const [notes, setNotes] = useState([]);
@@ -13,7 +15,6 @@ const App = () => {
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
   const [loginVisible, setLoginVisible] = useState(false);
-
 
   useEffect(() => {
     const getAll = async () => {
@@ -33,15 +34,9 @@ const App = () => {
     }
   }, []);
 
+  console.log(notes);
 
-
-
-  const addNote = async (event) => {
-    event.preventDefault();
-    const noteObject = {
-      content: newNote,
-      important: Math.random() < 0.5,
-    };
+  const addNote = async (noteObject) => {
     await noteService.create(noteObject);
     setNotes(notes.concat(noteObject));
     toast("Note added successfully");
@@ -52,18 +47,20 @@ const App = () => {
     setNewNote(event.target.value);
   };
 
-  const handleUsernameChange = (e)=>{
-    setUsername(e.target.value)
-  }
+  const handleUsernameChange = (e) => {
+    setUsername(e.target.value);
+  };
 
-  const handlePasswordChange = (e)=>{
-    setPassword(e.target.value)
-  }
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+  };
 
   const handleLogin = async (event) => {
     event.preventDefault();
+
     const user = await userService.login({ username, password });
     window.localStorage.setItem("loggedNoteappUser", JSON.stringify(user));
+
     noteService.setToken(user.token);
     setUser(user);
     if (!user) {
@@ -78,10 +75,15 @@ const App = () => {
   };
 
   const toggleImportance = async (id) => {
-    const note = notes.find((n) => n._id === id);
-    const updatedNote = { ...note, important: !note.important };
-    await noteService.update(id, updatedNote);
-    setNotes(notes.map((n) => (n._id === id ? updatedNote : n)));
+    try {
+      const note = notes.find((n) => n._id === id);
+      const updatedNote = { ...note, important: !note.important };
+      console.log(id, updatedNote);
+      await noteService.update(id, updatedNote);
+      setNotes(notes.map((n) => (n._id === id ? updatedNote : n)));
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const notesToShow = showAll
@@ -91,22 +93,9 @@ const App = () => {
     toast("Notification working");
   };
 
-  const noteForm = () => {
-    return (
-      <div>
-        <h2>Add Note</h2>
-        <form onSubmit={addNote}>
-          <input onChange={handleNoteChange} value={newNote} />
-          <button type="submit">save</button>
-        </form>
-      </div>
-    );
-  };
-
-
   const loginForm = () => {
-    const hideWhenVisible = { display: loginVisible ? 'none' : '' }
-    const showWhenVisible = { display: loginVisible ? '' : 'none' }
+    const hideWhenVisible = { display: loginVisible ? "none" : "" };
+    const showWhenVisible = { display: loginVisible ? "" : "none" };
 
     return (
       <div>
@@ -117,16 +106,15 @@ const App = () => {
           <LoginForm
             username={username}
             password={password}
-            handleUsernameChange={({ target }) => setUsername(target.value)}
-            handlePasswordChange={({ target }) => setPassword(target.value)}
+            handleUsernameChange={handleUsernameChange}
+            handlePasswordChange={handlePasswordChange}
             handleSubmit={handleLogin}
           />
           <button onClick={() => setLoginVisible(false)}>cancel</button>
         </div>
       </div>
-    )
-  }
-
+    );
+  };
 
   return (
     <div>
@@ -134,18 +122,18 @@ const App = () => {
       <ToastContainer />
       <button onClick={notify}>notify</button>
 
-      {!user ? (
-        <LoginForm
-          handleLogin={handleLogin}
-          username={username}
-          password={password}
-          handleUsernameChange={handleUsernameChange}
-          handlePasswordChange={handlePasswordChange}
-        />
-      ) : (
+      {!user && loginForm()}
+
+      {user && (
         <div>
-          {/* <p>{user.name} logged-in</p> */}
-          {noteForm()}
+          <p>{user.name} logged in</p>
+          <Togglable buttonLabel="new note">
+            <NoteForm
+              createNote={addNote}
+              value={newNote}
+              handleChange={handleNoteChange}
+            />
+          </Togglable>
         </div>
       )}
 
