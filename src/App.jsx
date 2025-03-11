@@ -1,5 +1,5 @@
 import Note from "./components/Note";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import noteService from "./api/note-service";
 import { ToastContainer, toast } from "react-toastify";
 import userService from "./api/user-service";
@@ -15,6 +15,8 @@ const App = () => {
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
   const [loginVisible, setLoginVisible] = useState(false);
+
+  const noteFormRef = useRef();
 
   useEffect(() => {
     const getAll = async () => {
@@ -127,7 +129,7 @@ const App = () => {
       {user && (
         <div>
           <p>{user.name} logged in</p>
-          <Togglable buttonLabel="new note">
+          <Togglable buttonLabel="new note" ref={noteFormRef}>
             <NoteForm
               createNote={addNote}
               value={newNote}
