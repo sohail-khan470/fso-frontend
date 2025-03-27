@@ -3,7 +3,7 @@ const Note = ({ note, toggleImportance }) => {
 
   return (
     <li>
-      {note.content}
+      {note.content + "  "}
       <button onClick={() => toggleImportance(note._id)}>{label}</button>
     </li>
   );

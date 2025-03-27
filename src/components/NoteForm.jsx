@@ -1,23 +1,31 @@
 import { useState } from "react";
+import { useAddNoteMutation } from "../redux/api";
 
-const NoteForm = ({ createNote }) => {
+const NoteForm = () => {
   const [newNote, setNewNote] = useState("");
+  const [addNote, { isLoading }] = useAddNoteMutation();
 
-  const addNote = (event) => {
+  const handleAddNote = async (event) => {
     event.preventDefault();
-    createNote({
-      content: newNote,
-      important: true,
-    });
-
+    try {
+      await addNote({ content: newNote, important: false }).unwrap();
+      setNewNote("");
+    } catch (err) {
+      console.error("Failed to add note:", err);
+    }
+    toast("Note added successfully");
     setNewNote("");
+  };
+
+  const handleNoteChange = (event) => {
+    setNewNote(event.target.value);
   };
 
   return (
     <div>
       <h2>Create a new note</h2>
 
-      <form onSubmit={addNote}>
+      <form onSubmit={handleAddNote}>
         <input
           value={newNote}
           onChange={(event) => setNewNote(event.target.value)}
