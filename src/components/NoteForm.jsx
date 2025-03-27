@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAddNoteMutation } from "../redux/api";
+import { toast, ToastContainer } from "react-toastify";
 
 const NoteForm = () => {
   const [newNote, setNewNote] = useState("");
@@ -23,14 +24,16 @@ const NoteForm = () => {
 
   return (
     <div>
+      <ToastContainer />
       <h2>Create a new note</h2>
-
       <form onSubmit={handleAddNote}>
         <input
           value={newNote}
           onChange={(event) => setNewNote(event.target.value)}
         />
-        <button type="submit">save</button>
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? "Adding..." : "Add Note"}
+        </button>
       </form>
     </div>
   );
