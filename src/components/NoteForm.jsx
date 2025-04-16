@@ -1,26 +1,29 @@
 import { useState } from "react";
-import { useAddNoteMutation } from "../redux/api";
 import { toast, ToastContainer } from "react-toastify";
+import { useNotesStore } from "../store/notes-store";
 
 const NoteForm = () => {
+  const { addNote, loading, error } = useNotesStore();
+
   const [newNote, setNewNote] = useState("");
-  const [addNote, { isLoading }] = useAddNoteMutation();
 
   const handleAddNote = async (event) => {
     event.preventDefault();
-    try {
-      await addNote({ content: newNote, important: false }).unwrap();
-      setNewNote("");
-    } catch (err) {
-      console.error("Failed to add note:", err);
-    }
-    toast("Note added successfully");
+    const note = {
+      content: newNote,
+      important: Math.floor(Math.random() * 10) > 5 ? true : false,
+    };
+    addNote(note);
+    toast("Note Added Successfully");
     setNewNote("");
   };
 
   const handleNoteChange = (event) => {
     setNewNote(event.target.value);
   };
+  if (error) {
+    toast(error);
+  }
 
   return (
     <div>
@@ -31,8 +34,8 @@ const NoteForm = () => {
           value={newNote}
           onChange={(event) => setNewNote(event.target.value)}
         />
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? "Adding..." : "Add Note"}
+        <button type="submit" disabled={loading}>
+          {loading ? "Adding..." : "Add Note"}
         </button>
       </form>
     </div>

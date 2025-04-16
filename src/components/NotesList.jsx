@@ -1,37 +1,20 @@
 import { useEffect, useState } from "react";
 import Note from "./Note";
 import noteService from "../api/note-service";
-import { useGetNotesQuery } from "../redux/api";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import { useNotesStore } from "../store/notes-store";
+import Spinner from "./Spinner";
 
 function NotesList() {
-  const [notes, setNotes] = useState([]);
-  const { data: allNotes, isLoading, isError, error } = useGetNotesQuery();
   const [showAll, setShowAll] = useState(true);
 
+  const { notes, fetchNotes, loading, addNote } = useNotesStore();
+
   useEffect(() => {
-    if (allNotes) {
-      setNotes(allNotes);
-    }
-  }, [allNotes]); // ✅ Corrected dependency
+    fetchNotes();
+  }, []);
 
   console.log(notes);
-
-  const toggleImportance = async (id) => {
-    try {
-      const note = notes.find((n) => n._id === id);
-      if (!note) return;
-
-      const updatedNote = { ...note, important: !note.important };
-      console.log(id, updatedNote);
-
-      await noteService.update(id, updatedNote);
-      setNotes(notes.map((n) => (n._id === id ? updatedNote : n)));
-    } catch (error) {
-      console.error("Error updating note:", error);
-      toast.error("Failed to update note.");
-    }
-  };
 
   const notesToShow = showAll ? notes : notes.filter((note) => note.important);
 
@@ -39,8 +22,13 @@ function NotesList() {
     toast("Notification working");
   };
 
+  if (loading) {
+    return <Spinner />;
+  }
+
   return (
     <div>
+      <ToastContainer />
       <h1>Notes</h1>
       <div>
         <button onClick={() => setShowAll(!showAll)}>
@@ -49,11 +37,7 @@ function NotesList() {
       </div>
       <ul>
         {notesToShow.map((note) => (
-          <Note
-            note={note}
-            key={note._id}
-            toggleImportance={toggleImportance}
-          />
+          <Note note={note} key={note._id} />
         ))}
       </ul>
     </div>
