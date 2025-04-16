@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
 import { useNotesStore } from "../store/notes-store";
+import { toast } from "react-toastify";
 
 const NoteForm = () => {
   const { addNote, loading, error } = useNotesStore();
@@ -12,8 +12,8 @@ const NoteForm = () => {
       content: newNote,
       important: Math.floor(Math.random() * 10) > 5,
     };
-    addNote(note);
-    toast.success("Note added successfully");
+    await addNote(note);
+    toast.success("Note added successfully")
     setNewNote("");
   };
 
@@ -27,7 +27,6 @@ const NoteForm = () => {
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-      <ToastContainer />
       <h2 className="text-2xl font-semibold mb-4 text-gray-700">
         📝 Create a New Note
       </h2>
