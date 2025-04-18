@@ -1,83 +1,66 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Spinner from "./Spinner";
+import authStore from "../store/auth-store";
+import { toast } from "react-toastify";
 
-const LoginForm = ({}) => {
+function LoginForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [user, setUser] = useState(null);
-  const [loginVisible, setLoginVisible] = useState(false);
+  const login = authStore((state) => state.login);
+  const loading = authStore((state) => state.isLoading);
+  const userInfo = authStore((state) => state.userInfo);
+  const error = authStore((state) => state.error);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem("loggedNoteappUser");
-    if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON);
-      setUser(user);
-      noteService.setToken(user.token);
+    if (userInfo) {
+      navigate("/notes");
     }
   }, []);
 
-  const handleUsernameChange = (e) => {
-    setUsername(e.target.value);
+  useEffect(() => {
+    toast(error);
+  }, [error]);
+
+  const handleLogin = () => {
+    login(username, password);
   };
 
-  const handlePasswordChange = (e) => {
-    setPassword(e.target.value);
-  };
-
-  const handleLogin = async (event) => {
-    event.preventDefault();
-
-    const user = await userService.login({ username, password });
-    window.localStorage.setItem("loggedNoteappUser", JSON.stringify(user));
-
-    noteService.setToken(user.token);
-    setUser(user);
-    if (!user) {
-      toast("Invalid Credentials please try again");
-    }
-    setUsername("");
-    setPassword("");
-
-    if (user) {
-      toast(`Logging in with the user ${user.username}`);
-    }
-  };
-  {
-    user && (
-      <div>
-        <p>{user.name} logged in</p>
-        <Togglable buttonLabel="new note" ref={noteFormRef}>
-          <NoteForm
-            createNote={addNote}
-            value={newNote}
-            handleChange={handleNoteChange}
-          />
-        </Togglable>
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm">
+        <h2 className="text-2xl font-semibold text-center mb-6">Login</h2>
+        {loading ? (
+          <div className="flex justify-center">
+            <Spinner />
+          </div>
+        ) : (
+          <>
+            <input
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full px-4 py-2 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+            <input
+              placeholder="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-2 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+            <button
+              onClick={handleLogin}
+              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
+            >
+              Login
+            </button>
+          </>
+        )}
       </div>
-    );
-  }
-
-  const loginForm = () => {
-    const hideWhenVisible = { display: loginVisible ? "none" : "" };
-    const showWhenVisible = { display: loginVisible ? "" : "none" };
-
-    return (
-      <div>
-        <div style={hideWhenVisible}>
-          <button onClick={() => setLoginVisible(true)}>log in</button>
-        </div>
-        <div style={showWhenVisible}>
-          <LoginForm
-            username={username}
-            password={password}
-            handleUsernameChange={handleUsernameChange}
-            handlePasswordChange={handlePasswordChange}
-            handleSubmit={handleLogin}
-          />
-          <button onClick={() => setLoginVisible(false)}>cancel</button>
-        </div>
-      </div>
-    );
-  };
-};
+    </div>
+  );
+}
 
 export default LoginForm;
